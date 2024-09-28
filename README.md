@@ -9,3 +9,5 @@ JavaScript Reactivity example.
 ```sh
 https://github.com/jumpeebunee/sveltekit-snippets.git
 ```
+
+💿️ Run code with local server ext or node index.js
