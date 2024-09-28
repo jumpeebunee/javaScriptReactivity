@@ -1,30 +1,51 @@
-const createState = (value, onUpdate) => {
-  const target = { value };
+import { DepSubscriber } from "./helpers/depSubscriber.js";
+import { watcher } from "./helpers/watcher.js";
 
-  const handler = {
-    set(target, _, value) {
-      target.value = value;
-      onUpdate(target);
+const mes = document.querySelector("#message");
+
+const data = {
+  name: "",
+  lastname: "",
+};
+
+const opts = {
+  target: null,
+};
+
+let fullname = "";
+
+Object.keys(data).forEach((key) => {
+  const dep = new DepSubscriber();
+
+  let value = data[key];
+
+  Object.defineProperty(data, key, {
+    get() {
+      dep.depend(opts.target);
+      return value;
     },
-  };
-
-  return new Proxy(target, handler);
-};
-
-const init = () => {
-  const render = (target) => {
-    const input = document.querySelector("#input");
-    const message = document.querySelector("#message");
-
-    input.value = target.value;
-    message.textContent = target.value;
-  };
-
-  const proxy = createState("", render);
-
-  input.addEventListener("input", (e) => {
-    proxy.value = e.target.value;
+    set(val) {
+      value = val;
+      dep.notify();
+    },
   });
+});
+
+const computed = {
+  getFullname() {
+    fullname = data.name + " " + data.lastname;
+    mes.textContent = fullname;
+  },
 };
 
-window.addEventListener("load", init);
+watcher(opts, computed.getFullname);
+
+document.querySelector("#firstname").addEventListener("input", (e) => {
+  const value = e.target.value;
+  data.name = value;
+});
+
+document.querySelector("#lastname").addEventListener("input", (e) => {
+  const value = e.target.value;
+  data.lastname = value;
+});
